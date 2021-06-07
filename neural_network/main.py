@@ -9,6 +9,7 @@ from sklearn import preprocessing
 from dataset_loader import load_csv_file
 import tensorflow as tf
 
+
 def print_hi(name):
     # Use a breakpoint in the code line below to debug your script.
     print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
@@ -27,26 +28,29 @@ if __name__ == '__main__':
         training_input_data = training_input_data.append(data[0])
         training_output_data = training_output_data.append(data[1])
 
-    tf_data = tf.convert_to_tensor(training_input_data.astype('float32'))
-    normalizer = preprocessing.MinMaxScaler(feature_range=(0, 1))
-    normalized_data = normalizer.fit_transform(tf_data)
 
-    # normalized_tf_data = preprocessing.normalize(tf_data)
+    data = load_csv_file('datasets/F10/f10_2p.xlsx')
+
+    tf_data_z = tf.convert_to_tensor(data[0].astype('float32'))
+    tf_data = tf.convert_to_tensor(training_input_data.astype('float32'))
+    normalizer_input = preprocessing.MinMaxScaler(feature_range=(0, 1))
+
+    normalized_data = normalizer_input.fit_transform(tf_data)
+    tf_data_z_n = normalizer_input.transform(tf_data_z)
 
     tf_data_out = tf.convert_to_tensor(training_output_data.astype('float32'))
-    print('A ', normalizer.fit_transform(tf_data_out))
-    print('B ', normalizer.inverse_transform(normalizer.fit_transform(tf_data_out)))
+    normalizer_output = preprocessing.MinMaxScaler(feature_range=(0, 1))
+    normalized_data_out = normalizer_output.fit_transform(tf_data_out)
 
-    # normalized_tf_data_out = preprocessing.normalize(tf_data_out)
-    normalized_data_out = normalizer.fit_transform(tf_data_out)
-    # print(normalized_tf_data_out)
-
-    dataset = tf.data.Dataset.from_tensor_slices((normalized_data, normalized_data_out)).shuffle(buffer_size=1024).batch(64)
-    print(dataset)
+    # w sumie to jest to nie używane - jak próbowałem to też wychodzą bzdury
+    dataset = tf.data.Dataset.from_tensor_slices((normalized_data, normalized_data_out)).shuffle(
+        buffer_size=1024).batch(64)
 
     model = tf.keras.Sequential([
-        tf.keras.layers.Dense(128, activation=tf.nn.relu, input_shape=(25, )),  # input shape required
-        tf.keras.layers.Dense(64, activation=tf.nn.relu),
+        tf.keras.layers.Dense(128, activation=tf.nn.sigmoid, input_shape=(24,)),  # input shape required
+        tf.keras.layers.Dense(64, activation=tf.nn.sigmoid),
+        tf.keras.layers.Dense(28, activation=tf.nn.sigmoid),
+        # tf.keras.layers.Dense(16, activation=tf.nn.relu),
         tf.keras.layers.Dense(2, activation=tf.nn.sigmoid)
     ])
 
@@ -55,13 +59,7 @@ if __name__ == '__main__':
 
     model.fit(normalized_data, normalized_data_out, epochs=5)
 
-    data = load_csv_file('datasets/F10/f10_1p.xlsx')
-
-    tf_data_z = tf.convert_to_tensor(data[0].astype('float32'))
-    normalizer_1 = preprocessing.MinMaxScaler(feature_range=(0, 1))
-    tf_data_z_n = normalizer_1.fit_transform(tf_data_z)
-
-    # not working
+    # still not working
     pr = model.predict(tf_data_z_n)
-    print(normalizer.inverse_transform(pr))
-    # print(tf_data_out)
+    print(normalizer_output.inverse_transform(pr))
+

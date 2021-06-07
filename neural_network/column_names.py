@@ -1,4 +1,5 @@
 rejected_labels = [
+    'Unnamed: 0',
     'timestamp',
     'tagId',
     'data__tagData__pressure',
