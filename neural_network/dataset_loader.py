@@ -16,7 +16,6 @@ def load_csv_file(filename):
             input_data = input_data.drop(index)
             output_data = output_data.drop(index)
 
-
     for column_name in rejected_labels:
         if column_name in input_data:
             input_data.pop(column_name)

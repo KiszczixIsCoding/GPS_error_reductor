@@ -3,6 +3,7 @@ import tensorflow as tf
 X_RANGE = 8000
 Y_RANGE = 3000
 
+
 class NeuralNetwork:
     pass
     # def __init__(self, data, no_layers=3):
