@@ -8,6 +8,7 @@ from dataset_loader import load_csv_file
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.metrics import mean_squared_error
 
 STAT_NUMBER = 225
 DYN_NUMBER = 3
@@ -33,20 +34,20 @@ if __name__ == '__main__':
         training_input_data = training_input_data.append(data[0])
         training_output_data = training_output_data.append(data[1])
 
-    for index in range(1, DYN_NUMBER):
-        data = load_csv_file('datasets/F8/f8_' + str(index) + 'p.xlsx')
-        testing_input_data = testing_input_data.append(data[0])
-        testing_output_data = testing_output_data.append(data[1])
-        data = load_csv_file('datasets/F10/f10_' + str(index) + 'p.xlsx')
-        testing_input_data = testing_input_data.append(data[0])
-        testing_output_data = testing_output_data.append(data[1])
+    # for index in range(1, DYN_NUMBER):
+    #     data = load_csv_file('datasets/F8/f8_' + str(index) + 'p.xlsx')
+    #     testing_input_data = testing_input_data.append(data[0])
+    #     testing_output_data = testing_output_data.append(data[1])
+    #     data = load_csv_file('datasets/F10/f10_' + str(index) + 'p.xlsx')
+    #     testing_input_data = testing_input_data.append(data[0])
+    #     testing_output_data = testing_output_data.append(data[1])
 
 
     data = load_csv_file('datasets/F10/f10_1p.xlsx')
 
-    tf_data = tf.convert_to_tensor((training_input_data.astype('float32') + 2000) / 10000)
-    tf_data_out = tf.convert_to_tensor((training_output_data.astype('float32') + 2000) / 10000)
-    tf_data_z_n = tf.convert_to_tensor((data[0].astype('float32') + 2000) / 10000)
+    tf_data = tf.convert_to_tensor((training_input_data.astype('float32')) / 10000)
+    tf_data_out = tf.convert_to_tensor((training_output_data.astype('float32')) / 10000)
+    tf_data_z_n = tf.convert_to_tensor((data[0].astype('float32')) / 10000)
 
 
     # tworzenie modelu składającego się z 3 warstw: dwie o prostokątnej funkcji aktywacji, jedna sigmoidalna
@@ -65,16 +66,23 @@ if __name__ == '__main__':
                   metrics=['accuracy'])
 
     # trenowanie modelu na danych, 150 epok
-    # model.fit(normalized_data, normalized_data_out, epochs=150, batch_size=512)
-    model.fit(tf_data, tf_data_out, epochs=250, batch_size=512)
-
-
+    model.fit(tf_data, tf_data_out, epochs=200, batch_size=512)
     pr = model.predict(tf_data_z_n)
 
-    print(pr * 10000 - 2000)
-    result = pr * 10000 - 2000
+    result = (pr * 10000)
     dtdt = DataFrame(result)
-    mse = 1 / len(dtdt) * (pow((data[1]['reference__x'] - dtdt[0]), 2) + pow((data[1]['reference__y'] - dtdt[1]), 2))
-    print(mse)
+
+    mse = []
+    for index in range(0, len(dtdt[0])):
+        mean_xy = (dtdt[0][index] + dtdt[1][index]) / 2
+        pow_x = pow(dtdt[0][index] - mean_xy, 2)
+        pow_y = pow(dtdt[1][index] - mean_xy, 2)
+        mse.append((pow_x + pow_y) / 2)
+
+
+    print(result)
+    print(data[1])
+    print(np.sqrt(mse))
+
     plt.bar(np.arange(0, 2240), mse)
     plt.show()
