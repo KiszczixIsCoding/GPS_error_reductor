@@ -85,7 +85,6 @@ if __name__ == '__main__':
         tf.keras.layers.Dense(64, activation=tf.nn.relu),
         tf.keras.layers.Dense(32, activation=tf.nn.relu),
         tf.keras.layers.Dense(16, activation=tf.nn.relu),
-        tf.keras.layers.Dense(8, activation=tf.nn.relu),
         tf.keras.layers.Dense(2, activation=tf.nn.sigmoid),
     ])
 
